@@ -24,4 +24,4 @@ requires:
   Moose::Util: 0
   Moose::Util::TypeConstraints: 0
   Test::More: 0
-version: 0.801
+version: 0.802

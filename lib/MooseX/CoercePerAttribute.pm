@@ -10,11 +10,11 @@ MooseX::CoercePerAttribute - Define Coercions per attribute!
 
 =head1 VERSION
 
-Version 0.7
+Version 0.802
 
 =cut
 
-our $VERSION = '0.801';
+our $VERSION = '0.802';
 
 use Moose::Role;
 use Moose::Util::TypeConstraints;
@@ -34,7 +34,7 @@ before _process_coerce_option => sub {
     $class->throw_error(
         "Couldn't build coercion from supplyed arguments for ($name)",
         data => $coercion,
-        ) unless ((ref $coercion) =~ /ARRAY|HASH/) || !$anon_subtype;
+        ) unless ((ref $coercion) =~ /ARRAY|HASH/) && $anon_subtype;
 
     my @coercions;
     @coercions = @$coercion if ref $coercion eq 'ARRAY';
@@ -72,13 +72,13 @@ This module allows for coercions to be declasred on a per attribute bases. Accep
 
     use MooseX::CoercePerAttribute;
 
-	has foo => (isa => 'Str', is => 'ro', coerce => 1);
-	has bar => (
+    has foo => (isa => 'Str', is => 'ro', coerce => 1);
+    has bar => (
         traits  => [CoercePerAttribute],
         isa     => Bar,
         is      => 'ro',
         coerce  => {
-		    Str => sub {
+            Str => sub {
                 my ($value, $options);
                 ...
                 },
@@ -91,15 +91,15 @@ This module allows for coercions to be declasred on a per attribute bases. Accep
 
     use Moose::Util::Types;
 
-	has baz => (
+    has baz => (
         traits  => [CoercePerAttribute],
         isa     => Baz,
         is      => 'ro',
         coerce  => [
             sub {
-		        coerce $_[0], from Str, via {}
-				}]
-        );
+                coerce $_[0], from Str, via {}
+                }]
+            );
 
 =head1 USAGE
 
@@ -136,17 +136,9 @@ You can also look for information at:
 
 L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=MooseX-CoercePerAttribute>
 
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/MooseX-CoercePerAttribute>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/MooseX-CoercePerAttribute>
-
 =item * Meta CPAN
 
-L<http:://meta.cpan.org/dist/MooseX-CoercePerAttribute/>
+L<https://metacpan.org/module/MooseX::CoercePerAttribute>
 
 =item * Search CPAN
 
