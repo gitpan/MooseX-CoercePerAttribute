@@ -1,13 +1,14 @@
 ---
 abstract: 'Define Coercions per attribute!'
 author:
-  - 'mrf <mrf@cpan.org>'
+  - 'Mike Francis <ungrim97@gmail.com>'
 build_requires:
-  ExtUtils::MakeMaker: 0
+  Data::Dumper: 0
+  Test::Most: 0.31
 configure_requires:
-  ExtUtils::MakeMaker: 0
-dynamic_config: 1
-generated_by: 'ExtUtils::MakeMaker version 6.6302, CPAN::Meta::Converter version 2.120630'
+  Module::Build::Tiny: 0.025
+dynamic_config: 0
+generated_by: 'Dist::Milla version v1.0.3, Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.120921'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -16,12 +17,21 @@ name: MooseX-CoercePerAttribute
 no_index:
   directory:
     - t
+    - xt
     - inc
+    - share
+    - eg
+    - examples
 requires:
-  Data::Dumper: 0
   Moose: 0
   Moose::Role: 0
   Moose::Util: 0
   Moose::Util::TypeConstraints: 0
-  Test::More: 0
-version: 0.802
+  perl: 5.008005
+resources:
+  bugtracker: https://github.com/ungrim97/MooseX-CoercePerAttribute/issues
+  homepage: https://github.com/ungrim97/MooseX-CoercePerAttribute
+  repository: https://github.com/ungrim97/MooseX-CoercePerAttribute.git
+version: 1.000
+x_contributors:
+  - 'Mike Francis (mrf) <ungrim97@gmail.com>'

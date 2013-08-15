@@ -1,20 +1,9 @@
 package MooseX::CoercePerAttribute;
 
-use 5.006;
 use strict;
-use warnings;
+use 5.008_005;
 
-=head1 NAME
-
-MooseX::CoercePerAttribute - Define Coercions per attribute!
-
-=head1 VERSION
-
-Version 0.802
-
-=cut
-
-our $VERSION = '0.802';
+our $VERSION = '1.000';
 
 use Moose::Role;
 use Moose::Util::TypeConstraints;
@@ -29,46 +18,66 @@ before _process_coerce_option => sub {
     # Create an anonomous subtype of the TC object so as to not mess with the existing TC
     my $anon_subtype = $options->{type_constraint} = Moose::Meta::TypeConstraint->new(
         parent => $options->{type_constraint},
-        );
+    );
 
     $class->throw_error(
         "Couldn't build coercion from supplyed arguments for ($name)",
         data => $coercion,
-        ) unless ((ref $coercion) =~ /ARRAY|HASH/) && $anon_subtype;
+    ) unless ((ref $coercion) =~ /ARRAY|HASH/) && $anon_subtype;
 
     my @coercions;
-    @coercions = @$coercion if ref $coercion eq 'ARRAY';
 
+    # NOTE: Depricated bahviour. Just set it to the approved usage.
+    # TODO: Remove in version 1.000
     if (ref $coercion eq 'HASH'){
-        # We comvert the hash of coercions into sub refs to create the TypeCoercion.
-        for my $fromtype (keys %$coercion){
-            push @coercions, sub {
-                coerce shift,
-                    from $fromtype,
-                        &via($coercion->{$fromtype}),
+        warn "The use of a HashRef for declaration of inline coercions is depricated. See perldoc MooseX::CoercePerAttribute. This feature will be removed in version 1.100 of MooseX::CoercePerAttribute";
+        $coercion = [ 
+            map { $_ => $coercion->{$_} } keys %$coercion,
+        ];
+    }
+
+    if (ref $coercion eq 'ARRAY') {
+        while (scalar @$coercion) {
+            my $coerce_type = shift @$coercion;
+
+            # The user can supply the coercion in its full form...
+            if (ref $coerce_type eq 'CODE'){
+                push @coercions, $coerce_type;
+            }
+
+            # Or they can give us the pieces to make the coercion from.
+            if (!ref $coerce_type){
+                my $via = shift @$coercion;
+
+                # Create the coercion sub ref from the list of Type => via pairs.
+                push @coercions, sub {
+                    &coerce(shift, &from($coerce_type, &via($via)) )
                 };
             }
         }
+    }
 
+    # Create each coercion object from a anonymous subtype
     for my $coercion (@coercions){
         $coercion->($anon_subtype) if ref $coercion eq 'CODE';
-        }
+    }
 
     $class->throw_error(
         "Coerce for ($name) doesn't set a coercion for ($anon_subtype), see man MooseX::CoercePerAttribute for usage",
         data => $coercion
-        ) unless $anon_subtype->has_coercion;
-    };
+    ) unless $anon_subtype->has_coercion;
+};
 
-=pod
+1;
+__END__
 
-=head1 DESCRIPTION
+=encoding utf-8
 
-A simple Moose Trait to allow you to define coercions per attribute.
+=head1 NAME
+
+MooseX::CoercePerAttribute - Define Coercions per attribute!
 
 =head1 SYNOPSIS
-
-This module allows for coercions to be declasred on a per attribute bases. Accepting either an array of  Code refs of the coercion to be run or an HashRef of various arguments to create a coearcion routine from .
 
     use MooseX::CoercePerAttribute;
 
@@ -77,17 +86,17 @@ This module allows for coercions to be declasred on a per attribute bases. Accep
         traits  => [CoercePerAttribute],
         isa     => Bar,
         is      => 'ro',
-        coerce  => {
+        coerce  => [
             Str => sub {
                 my ($value, $options);
                 ...
-                },
+            },
             Int => sub {
                 my ($value, $options);
                 ...
-                },
             },
-        );
+        ],
+    );
 
     use Moose::Util::Types;
 
@@ -99,27 +108,39 @@ This module allows for coercions to be declasred on a per attribute bases. Accep
             sub {
                 coerce $_[0], from Str, via {}
                 }]
-            );
+        );
+
+
+=head1 DESCRIPTION
+
+MooseX::CoercePerAttribute is a simple Moose Trait to allow you to define inline coercions per attribute.
+
+This module allows for coercions to be declasred on a per attribute bases. Accepting either an array of  Code refs of the coercion to be run or an HashRef of various arguments to create a coearcion routine from .
 
 =head1 USAGE
 
 This trait allows you to declare a type coercion inline for an attribute. The Role will create an __ANON__ sub TypeConstraint object of the TypeConstraint in the attributes isa parameter. The type coercion can be supplied in one of two methods. The coercion should be supplied to the Moose Attribute coerce parameter.
 
-1. The recomended usage is to supply a hashref declaring the type to coerce from and a subref to be excuted.
-    coerce => {$Fromtype => sub {}}
+1. The recomended usage is to supply a arrayref list declaring the types to coerce from and a subref to be excuted in pairs.
+    coerce => [$Fromtype1 => sub {}, $Fromtype2 => sub {}]
 
 2. Alternatively you can supply and arrayref of coercion coderefs. These should be in the same format as defined in L<Moose::Util::TypeConstraints> and will be passed the __ANON__ subtype as its first argument. If you use this method then you will need to use Moose::Util::TypeConstraints in you module.
     coerce => [sub {coerce $_[0], from Str, via sub {} }]
 
+NB: Moose handles its coercions as an array of possibe coercions. This means that it will use the first coercion in the list that matches the criteria. In earlier versions of this module the coercions were supplied as a HASHREF. This behaviour is deprecated and will be removed in later versions as it creates an uncertainty over the order of usage.
+
 =head1 AUTHOR
 
-mrf, C<< <mrf at cpan.org> >>
+Mike Francis E<lt>ungrim97@gmail.comE<gt>
 
-=head1 BUGS
+=head1 COPYRIGHT
 
-Please report any bugs or feature requests to C<bug-moosex-coerceperattribute at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=MooseX-CoercePerAttribute>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
+Copyright 2013- Mike Francis
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SUPPORT
 
@@ -147,20 +168,4 @@ L<http://search.cpan.org/dist/MooseX-CoercePerAttribute/>
 =back
 
 
-=head1 ACKNOWLEDGEMENTS
-
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2012 mrf.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
-
-
 =cut
-
-1; # End of MooseX::CoercePerAttribute

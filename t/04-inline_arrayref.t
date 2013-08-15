@@ -1,6 +1,5 @@
-# NOTE: This is a test for depricated code. The deprecated code will be removed in 1.100 along with this test.
 use Moose;
-use Test::More tests => 12;
+use Test::More tests => 32;
 use Test::Deep qw/cmp_deeply/;
 use Data::Dumper;
 
@@ -13,58 +12,72 @@ has test_str_coerce => (
     is      => 'rw',
     isa     => 'Str',
     traits  => ['CoercePerAttribute'],
-    coerce  => {
+    coerce  => [
         Int => sub {
             'TEST'.$_;
             },
-        },
-    );
+    ],
+);
 
 has test_int_coerce => (
     is      => 'rw',
     isa     => 'Int',
     traits  => ['CoercePerAttribute'],
-    coerce  => {
+    coerce  => [
         Str => sub {
-             '2';
-            },
+            '2';
         },
-    );
+    ],
+);
 
 has test_arrayref_coerce => (
     is      => 'rw',
     isa     => 'ArrayRef[Str]',
     traits  => ['CoercePerAttribute'],
-    coerce  => {
+    coerce  => [
         Str => sub {
             [$_.3];
-            },
         },
-    );
+    ],
+);
 
 has test_hashref_coerce => (
     is      => 'rw',
     isa     => 'HashRef[Str]',
     traits  => ['CoercePerAttribute'],
-    coerce  => {
+    coerce  => [
         Str => sub {
             return {$_ => 4};
-            },
         },
-    );
+    ],
+);
+
+has test_order_coerce => (
+    is      => 'rw',
+    isa     => 'HashRef',
+    traits  => ['CoercePerAttribute'],
+    coerce  => [
+        Int => sub {
+            {TEST => $_ },
+        },
+        Str => sub {
+            {$_ => 8}
+        },
+    ],
+);
 
 has test_multiple_coerce => (
     is      => 'rw',
     isa     => 'HashRef',
     traits  => ['CoercePerAttribute'],
-    coerce  => {
+    coerce  => [
         Int => sub {
-            {'TEST' => $_}
+            {TEST => $_}
         },
         ArrayRef => sub {
-            return {(shift @{$_}) => 5 },
+            return { (shift @{$_}) => 5 }
         },
-    },
+    ],
 );
 
 STR_COERCION: {
@@ -108,10 +121,12 @@ MUTIPLE_FROM_ARRAY_COERCION: {
     cmp_deeply($test->test_multiple_coerce => {TEST => 5}, 'Multiple from Array has been coerced correctly')
     }
 
-MULTIPLE_FROM_INT_COERCION: {
+ORDER_OF_COERCION: {
     my $test;
-    eval { $test = __PACKAGE__->new( test_multiple_coerce => 6 ) };
+    for my $test_num (6..16){
+        eval { $test = __PACKAGE__->new( test_multiple_coerce => $test_num ) };
 
-    ok(!$@, 'Created TestClass object without errors') || fail(Dumper($@));
-    cmp_deeply($test->test_multiple_coerce => {TEST => 6}, 'Multiple from Str has been coerced correctly')
+        ok(!$@, 'Created TestClass object without errors') || fail(Dumper($@));
+        cmp_deeply($test->test_multiple_coerce => {TEST => $test_num}, 'Multiple from Str has been coerced correctly')
     }
+}

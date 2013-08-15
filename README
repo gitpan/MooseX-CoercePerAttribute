@@ -1,55 +1,95 @@
-MooseX-CoercePerAttribute
+NAME
+    MooseX::CoercePerAttribute - Define Coercions per attribute!
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+SYNOPSIS
+        use MooseX::CoercePerAttribute;
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+        has foo => (isa => 'Str', is => 'ro', coerce => 1);
+        has bar => (
+            traits  => [CoercePerAttribute],
+            isa     => Bar,
+            is      => 'ro',
+            coerce  => [
+                Str => sub {
+                    my ($value, $options);
+                    ...
+                },
+                Int => sub {
+                    my ($value, $options);
+                    ...
+                },
+            ],
+        );
 
+        use Moose::Util::Types;
 
-INSTALLATION
+        has baz => (
+            traits  => [CoercePerAttribute],
+            isa     => Baz,
+            is      => 'ro',
+            coerce  => [
+                sub {
+                    coerce $_[0], from Str, via {}
+                    }]
+            );
 
-To install this module, run the following commands:
+DESCRIPTION
+    MooseX::CoercePerAttribute is a simple Moose Trait to allow you to
+    define inline coercions per attribute.
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+    This module allows for coercions to be declasred on a per attribute
+    bases. Accepting either an array of Code refs of the coercion to be run
+    or an HashRef of various arguments to create a coearcion routine from .
 
-SUPPORT AND DOCUMENTATION
+USAGE
+    This trait allows you to declare a type coercion inline for an
+    attribute. The Role will create an __ANON__ sub TypeConstraint object of
+    the TypeConstraint in the attributes isa parameter. The type coercion
+    can be supplied in one of two methods. The coercion should be supplied
+    to the Moose Attribute coerce parameter.
 
-After installing, you can find documentation for this module with the
-perldoc command.
+    1. The recomended usage is to supply a arrayref list declaring the types
+    to coerce from and a subref to be excuted in pairs. coerce =>
+    [$Fromtype1 => sub {}, $Fromtype2 => sub {}]
 
-    perldoc MooseX::CoercePerAttribute
+    2. Alternatively you can supply and arrayref of coercion coderefs. These
+    should be in the same format as defined in Moose::Util::TypeConstraints
+    and will be passed the __ANON__ subtype as its first argument. If you
+    use this method then you will need to use Moose::Util::TypeConstraints
+    in you module. coerce => [sub {coerce $_[0], from Str, via sub {} }]
 
-You can also look for information at:
+    NB: Moose handles its coercions as an array of possibe coercions. This
+    means that it will use the first coercion in the list that matches the
+    criteria. In earlier versions of this module the coercions were supplied
+    as a HASHREF. This behaviour is deprecated and will be removed in later
+    versions as it creates an uncertainty over the order of usage.
 
-    RT, CPAN's request tracker (report bugs here)
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=MooseX-CoercePerAttribute
+AUTHOR
+    Mike Francis <ungrim97@gmail.com>
 
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/MooseX-CoercePerAttribute
+COPYRIGHT
+    Copyright 2013- Mike Francis
 
-    CPAN Ratings
-        http://cpanratings.perl.org/d/MooseX-CoercePerAttribute
+LICENSE
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
 
-    Search CPAN
-        http://search.cpan.org/dist/MooseX-CoercePerAttribute/
+SUPPORT
+    You can find documentation for this module with the perldoc command.
 
+        perldoc MooseX::CoercePerAttribute
 
-LICENSE AND COPYRIGHT
+    You can also look for information at:
 
-Copyright (C) 2012 mrf
+    *   RT: CPAN's request tracker (report bugs here)
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
+        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=MooseX-CoercePerAttribute>
 
-See http://dev.perl.org/licenses/ for more information.
+    *   Meta CPAN
+
+        <https://metacpan.org/module/MooseX::CoercePerAttribute>
+
+    *   Search CPAN
+
+        <http://search.cpan.org/dist/MooseX-CoercePerAttribute/>
 

@@ -1,10 +1,10 @@
 {
    "abstract" : "Define Coercions per attribute!",
    "author" : [
-      "mrf <mrf@cpan.org>"
+      "Mike Francis <ungrim97@gmail.com>"
    ],
-   "dynamic_config" : 1,
-   "generated_by" : "ExtUtils::MakeMaker version 6.6302, CPAN::Meta::Converter version 2.120630",
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Milla version v1.0.3, Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -16,31 +16,55 @@
    "no_index" : {
       "directory" : [
          "t",
-         "inc"
+         "xt",
+         "inc",
+         "share",
+         "eg",
+         "examples"
       ]
    },
    "prereqs" : {
-      "build" : {
-         "requires" : {
-            "ExtUtils::MakeMaker" : "0"
-         }
-      },
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "Module::Build::Tiny" : "0.025"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::Pod" : "1.41"
          }
       },
       "runtime" : {
          "requires" : {
-            "Data::Dumper" : "0",
             "Moose" : "0",
             "Moose::Role" : "0",
             "Moose::Util" : "0",
             "Moose::Util::TypeConstraints" : "0",
-            "Test::More" : "0"
+            "perl" : "5.008005"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Data::Dumper" : "0",
+            "Test::Most" : "0.31"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "0.802"
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/ungrim97/MooseX-CoercePerAttribute/issues"
+      },
+      "homepage" : "https://github.com/ungrim97/MooseX-CoercePerAttribute",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/ungrim97/MooseX-CoercePerAttribute.git",
+         "web" : "https://github.com/ungrim97/MooseX-CoercePerAttribute"
+      }
+   },
+   "version" : "1.000",
+   "x_contributors" : [
+      "Mike Francis (mrf) <ungrim97@gmail.com>"
+   ]
 }
+
